@@ -14,12 +14,12 @@ import {
 import OTPInputView from '@twotalltotems/react-native-otp-input';
 import AsyncStorage from '@react-native-community/async-storage';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import getTimeoutSignal from './commonApis';
 import {
   responsiveScreenHeight,
   responsiveScreenWidth,
   responsiveScreenFontSize,
 } from 'react-native-responsive-dimensions';
+import getTimeoutSignal from './commonApis';
 
 MaterialCommunityIcons.loadFont();
 
