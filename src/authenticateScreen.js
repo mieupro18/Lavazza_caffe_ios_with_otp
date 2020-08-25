@@ -20,7 +20,7 @@ import {
   responsiveScreenWidth,
   responsiveScreenFontSize,
 } from 'react-native-responsive-dimensions';
-
+hi
 MaterialCommunityIcons.loadFont();
 
 export default class authenticateScreen extends Component {
