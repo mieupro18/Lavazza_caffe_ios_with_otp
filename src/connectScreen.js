@@ -77,7 +77,7 @@ export default class connectScreen extends Component {
 
   handleAppStateChange = async (state) => {
     try {
-      console.log(state);
+      //console.log(state);
       if (state === 'background') {
         console.log('background');
         var feedbackData = JSON.parse(
