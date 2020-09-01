@@ -67,8 +67,8 @@ export default class AuthenticateScreen extends Component {
       }
     }, 1000);*/
     fetch(URL, {signal: getTimeoutSignal().signal})
-      .then(response => response.json())
-      .then(async resultData => {
+      .then((response) => response.json())
+      .then(async (resultData) => {
         console.log(resultData);
         if (resultData.status === 'success') {
           this.state.otp.push(otp.toString());
@@ -94,7 +94,7 @@ export default class AuthenticateScreen extends Component {
           this.setState({isLoading: false});
         }
       })
-      .catch(async e => {
+      .catch(async (e) => {
         console.log(e);
         this.setState({isLoading: false});
         Alert.alert('', 'Please check the Internet connection', [{text: 'Ok'}]);
@@ -166,7 +166,7 @@ export default class AuthenticateScreen extends Component {
                 maxLength={10}
                 placeholder="Enter phone number"
                 fontSize={responsiveScreenFontSize(1.5)}
-                onChangeText={number => (this.state.mobileNumber = number)}
+                onChangeText={(number) => (this.state.mobileNumber = number)}
               />
             </View>
             {this.state.isLoading ? (
@@ -228,7 +228,7 @@ export default class AuthenticateScreen extends Component {
                     styles.otpBoxUnderlineStyleHighLighted
                   }
                   placeholderTextColor="#100A45"
-                  onCodeFilled={code => {
+                  onCodeFilled={(code) => {
                     console.log('code', code);
                     this.state.enteredOTP = code;
                     Keyboard.dismiss();
