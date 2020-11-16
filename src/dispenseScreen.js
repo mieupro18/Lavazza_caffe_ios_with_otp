@@ -521,10 +521,12 @@ export default class DispenseScreen extends Component {
                 </View>
                 {this.state.orderStatusCode === DISPENSING ? (
                   <View style={styles.modalItemContainer}>
-                    <ProgressiveImage
-                      style={styles.dispensingGifStyleInModal}
-                      source={require('../assets/dispensing.gif')}
-                    />
+                    <View style={styles.dispensingGifContainer}>
+                      <ProgressiveImage
+                        style={styles.dispensingGifStyleInModal}
+                        source={require('../assets/dispensing.gif')}
+                      />
+                    </View>
                   </View>
                 ) : (
                   <View>
@@ -771,6 +773,10 @@ const styles = StyleSheet.create({
     width: responsiveScreenWidth(25),
     height: responsiveScreenHeight(4),
     resizeMode: 'contain',
+  },
+  dispensingGifContainer: {
+    borderRadius: responsiveScreenWidth(25),
+    overflow: 'hidden',
   },
   dispensingGifStyleInModal: {
     width: responsiveScreenWidth(40),
