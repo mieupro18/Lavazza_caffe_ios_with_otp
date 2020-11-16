@@ -432,10 +432,26 @@ export default class DispenseScreen extends Component {
     return (
       <SafeAreaView style={styles.mainContainer}>
         <View style={styles.headerContainer}>
-          <Image
-            style={styles.logoStyleInHeader}
-            source={require('../assets/Lavazza-White-Logo-No-Background.png')}
-          />
+          <TouchableOpacity
+            onPress={() => {
+              Alert.alert(
+                'Machine Info',
+                'Machine Id : ' +
+                  this.state.machineId +
+                  '\nMachine Name : ' +
+                  this.state.machineName,
+                [
+                  {
+                    text: 'Done',
+                  },
+                ],
+              );
+            }}>
+            <Image
+              style={styles.logoStyleInHeader}
+              source={require('../assets/Lavazza-White-Logo-No-Background.png')}
+            />
+          </TouchableOpacity>
         </View>
         <ScrollView>
           {this.state.deviceProductList.map((product, index) => {
