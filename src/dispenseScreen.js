@@ -51,6 +51,8 @@ import ProgressiveImage from './progressiveImage';
 MaterialCommunityIcons.loadFont();
 MaterialIcons.loadFont();
 
+const finalPairOrderPosition = 2;
+
 export default class DispenseScreen extends Component {
   constructor(props) {
     super(props);
@@ -73,6 +75,8 @@ export default class DispenseScreen extends Component {
       timer: timeoutForDispense,
       machineName: null,
       machineId: null,
+      stopButtonVisible: false,
+      currentDispensingPairOrderPosition: 0,
     };
   }
 
@@ -148,6 +152,8 @@ export default class DispenseScreen extends Component {
       pairProductId: null,
       pairProductName: null,
       pairProductImage: null,
+      stopButtonVisible: false,
+      currentDispensingPairOrderPosition: 0,
     });
   };
 
@@ -198,6 +204,7 @@ export default class DispenseScreen extends Component {
                 orderStatusCode: WAITING_TO_DISPENSE,
                 currentOrderNumberVisible: false,
                 currentOrderNumber: null,
+                stopButtonVisible: false,
               });
               this.timer = setInterval(async () => {
                 this.setState({timer: this.state.timer - 1});
@@ -223,6 +230,8 @@ export default class DispenseScreen extends Component {
               this.setState({
                 orderStatusCode: ORDER_DISPENSED,
                 orderId: null,
+                stopButtonVisible: false,
+                currentDispensingPairOrderPosition: 0,
               });
             }
           } else {
@@ -372,6 +381,15 @@ export default class DispenseScreen extends Component {
           this.setState({orderStatusCode: DISPENSING});
           console.log('Dispense Starts');
           this.startPollForOrderStatus(productName);
+          if (this.state.pairOrderFlag) {
+            this.setState({
+              currentDispensingPairOrderPosition:
+                this.state.currentDispensingPairOrderPosition + 1,
+            });
+          }
+          if (resultData.stopDispense) {
+            this.setState({stopButtonVisible: true});
+          }
         } else {
           if (resultData.orderStatus === MACHINE_NOT_READY) {
             this.setState({orderStatusCode: MACHINE_NOT_READY});
@@ -390,6 +408,53 @@ export default class DispenseScreen extends Component {
         }
       })
       .catch(async (e) => {
+        this.setState({
+          orderStatusCode: SOMETHING_WENT_WRONG,
+        });
+        this.setStateVariablesToInitialState();
+      });
+  };
+
+  stopDispense = async (productName) => {
+    fetch(PI_SERVER_ENDPOINT + '/stopDispense?orderId=' + this.state.orderId, {
+      headers: {
+        tokenId: TOKEN,
+        machineId: this.state.machineId,
+        machineName: this.state.machineName,
+      },
+      signal: (await getTimeoutSignal(5000)).signal,
+    })
+      .then((response) => response.json())
+      .then(async (resultData) => {
+        console.log(resultData);
+        if (resultData.status === SUCCESS) {
+          if (
+            this.state.pairOrderFlag === false ||
+            this.state.currentDispensingPairOrderPosition ===
+              finalPairOrderPosition
+          ) {
+            this.stopPollForOrderStatus();
+            console.log('Dispense Stopped');
+            if (await this.checkForFeedbackVisibility(productName)) {
+              console.log('feedback visible');
+              this.setState({
+                feedbackVisible: true,
+              });
+            }
+            this.setState({
+              orderStatusCode: ORDER_DISPENSED,
+              orderId: null,
+            });
+          }
+        } else {
+          console.log('Error in stopping the dispense');
+          this.stopPollForOrderStatus();
+          this.setState({orderStatusCode: SOMETHING_WENT_WRONG});
+          this.setStateVariablesToInitialState();
+        }
+      })
+      .catch(async (e) => {
+        this.stopPollForOrderStatus();
         this.setState({
           orderStatusCode: SOMETHING_WENT_WRONG,
         });
@@ -596,6 +661,28 @@ export default class DispenseScreen extends Component {
                     <Text style={styles.timeoutTextStyle}>
                       Current Serving Order No {this.state.currentOrderNumber}
                     </Text>
+                  </View>
+                ) : null}
+
+                {this.state.stopButtonVisible ? (
+                  <View style={styles.modalItemContainer}>
+                    <MaterialCommunityIcons.Button
+                      name="stop-circle"
+                      size={responsiveScreenHeight(3)}
+                      color="white"
+                      backgroundColor="#100A45"
+                      onPress={async () => {
+                        this.setState({
+                          stopButtonVisible: false,
+                          orderStatusCode: PLEASE_WAIT,
+                        });
+                        await this.stopDispense(
+                          this.state.deviceProductList[this.state.selectedIndex]
+                            .productName,
+                        );
+                      }}>
+                      <Text style={styles.buttonTextStyle}>Stop</Text>
+                    </MaterialCommunityIcons.Button>
                   </View>
                 ) : null}
 
@@ -826,6 +913,11 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   timeoutTextStyle: {
+    fontSize: responsiveScreenFontSize(1.3),
+    fontWeight: 'bold',
+    color: '#100A45',
+  },
+  stopTextStyle: {
     fontSize: responsiveScreenFontSize(1.3),
     fontWeight: 'bold',
     color: '#100A45',
