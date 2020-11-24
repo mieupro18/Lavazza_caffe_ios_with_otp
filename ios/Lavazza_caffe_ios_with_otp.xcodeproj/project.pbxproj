@@ -727,7 +727,7 @@
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Lavazza_caffe_ios_with_otp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -754,7 +754,7 @@
 				DEVELOPMENT_TEAM = 37GKXG6NQ3;
 				INFOPLIST_FILE = Lavazza_caffe_ios_with_otp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
