@@ -17,7 +17,8 @@
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DCD954D1E0B4F2C00145EB5 /* Lavazza_caffe_ios_with_otpTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* Lavazza_caffe_ios_with_otpTests.m */; };
 		6D517DDF596D05EBDDEEEA29 /* libPods-Lavazza_caffe_ios_with_otp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D33346828F076B49E9C3312B /* libPods-Lavazza_caffe_ios_with_otp.a */; };
-		8193B45C256D45320093111B /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 8193B45B256D45320093111B /* main.jsbundle */; };
+		81011DD1256E9ECE00C11D81 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 81011DCF256E9ECD00C11D81 /* assets */; };
+		81011DD2256E9ECE00C11D81 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 81011DD0256E9ECD00C11D81 /* main.jsbundle */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		A50E7CF3B44523AFB0E4D25E /* libPods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CD5EB86ABBC5E63625D1264E /* libPods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.a */; };
 		F76EB01D61F1079A2D73D41B /* libPods-Lavazza_caffe_ios_with_otp-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DD32A2A4B28375D04C10F0FA /* libPods-Lavazza_caffe_ios_with_otp-tvOSTests.a */; };
@@ -57,7 +58,8 @@
 		5A13FB7889F95CCA3FB223C1 /* Pods-Lavazza_caffe_ios_with_otp-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lavazza_caffe_ios_with_otp-tvOS.release.xcconfig"; path = "Target Support Files/Pods-Lavazza_caffe_ios_with_otp-tvOS/Pods-Lavazza_caffe_ios_with_otp-tvOS.release.xcconfig"; sourceTree = "<group>"; };
 		761A9BB6F1A5547E75E4343E /* Pods-Lavazza_caffe_ios_with_otp-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lavazza_caffe_ios_with_otp-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-Lavazza_caffe_ios_with_otp-tvOS/Pods-Lavazza_caffe_ios_with_otp-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 		7BAF324CF0131FBA7989AC9B /* Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.release.xcconfig"; path = "Target Support Files/Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests/Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.release.xcconfig"; sourceTree = "<group>"; };
-		8193B45B256D45320093111B /* main.jsbundle */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
+		81011DCF256E9ECD00C11D81 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
+		81011DD0256E9ECD00C11D81 /* main.jsbundle */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Lavazza_caffe_ios_with_otp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		99DBDB62EA82A23F746EAC6B /* Pods-Lavazza_caffe_ios_with_otp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lavazza_caffe_ios_with_otp.release.xcconfig"; path = "Target Support Files/Pods-Lavazza_caffe_ios_with_otp/Pods-Lavazza_caffe_ios_with_otp.release.xcconfig"; sourceTree = "<group>"; };
 		B5DE8831D1F209DE4DB7CE2E /* Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.debug.xcconfig"; path = "Target Support Files/Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests/Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -159,7 +161,8 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				8193B45B256D45320093111B /* main.jsbundle */,
+				81011DCF256E9ECD00C11D81 /* assets */,
+				81011DD0256E9ECD00C11D81 /* main.jsbundle */,
 				13B07FAE1A68108700A75B9A /* Lavazza_caffe_ios_with_otp */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* Lavazza_caffe_ios_with_otpTests */,
@@ -342,7 +345,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8193B45C256D45320093111B /* main.jsbundle in Resources */,
+				81011DD1256E9ECE00C11D81 /* assets in Resources */,
+				81011DD2256E9ECE00C11D81 /* main.jsbundle in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 			);
@@ -724,7 +728,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 37GKXG6NQ3;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Lavazza_caffe_ios_with_otp/Info.plist;
@@ -752,7 +756,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 37GKXG6NQ3;
 				INFOPLIST_FILE = Lavazza_caffe_ios_with_otp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
