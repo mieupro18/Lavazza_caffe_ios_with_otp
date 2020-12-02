@@ -17,6 +17,8 @@
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DCD954D1E0B4F2C00145EB5 /* Lavazza_caffe_ios_with_otpTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* Lavazza_caffe_ios_with_otpTests.m */; };
 		6D517DDF596D05EBDDEEEA29 /* libPods-Lavazza_caffe_ios_with_otp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D33346828F076B49E9C3312B /* libPods-Lavazza_caffe_ios_with_otp.a */; };
+		81011DD1256E9ECE00C11D81 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 81011DCF256E9ECD00C11D81 /* assets */; };
+		81011DD2256E9ECE00C11D81 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 81011DD0256E9ECD00C11D81 /* main.jsbundle */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		A50E7CF3B44523AFB0E4D25E /* libPods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CD5EB86ABBC5E63625D1264E /* libPods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.a */; };
 		F76EB01D61F1079A2D73D41B /* libPods-Lavazza_caffe_ios_with_otp-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DD32A2A4B28375D04C10F0FA /* libPods-Lavazza_caffe_ios_with_otp-tvOSTests.a */; };
@@ -40,12 +42,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		00E356EE1AD99517003FC87E /* Lavazza_caffe_ios_with_otpTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Lavazza_caffe_ios_with_otpTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* Lavazza_caffe_ios_with_otpTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Lavazza_caffe_ios_with_otpTests.m; sourceTree = "<group>"; };
 		026545029A7E8B465983783D /* libPods-Lavazza_caffe_ios_with_otp-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Lavazza_caffe_ios_with_otp-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07F961A680F5B00A75B9A /* Lavazza_caffe_ios_with_otp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lavazza_caffe_ios_with_otp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* Lavazza Caffè.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Lavazza Caffè.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Lavazza_caffe_ios_with_otp/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = Lavazza_caffe_ios_with_otp/AppDelegate.m; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Lavazza_caffe_ios_with_otp/Images.xcassets; sourceTree = "<group>"; };
@@ -57,6 +58,8 @@
 		5A13FB7889F95CCA3FB223C1 /* Pods-Lavazza_caffe_ios_with_otp-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lavazza_caffe_ios_with_otp-tvOS.release.xcconfig"; path = "Target Support Files/Pods-Lavazza_caffe_ios_with_otp-tvOS/Pods-Lavazza_caffe_ios_with_otp-tvOS.release.xcconfig"; sourceTree = "<group>"; };
 		761A9BB6F1A5547E75E4343E /* Pods-Lavazza_caffe_ios_with_otp-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lavazza_caffe_ios_with_otp-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-Lavazza_caffe_ios_with_otp-tvOS/Pods-Lavazza_caffe_ios_with_otp-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 		7BAF324CF0131FBA7989AC9B /* Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.release.xcconfig"; path = "Target Support Files/Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests/Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.release.xcconfig"; sourceTree = "<group>"; };
+		81011DCF256E9ECD00C11D81 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
+		81011DD0256E9ECD00C11D81 /* main.jsbundle */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Lavazza_caffe_ios_with_otp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		99DBDB62EA82A23F746EAC6B /* Pods-Lavazza_caffe_ios_with_otp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lavazza_caffe_ios_with_otp.release.xcconfig"; path = "Target Support Files/Pods-Lavazza_caffe_ios_with_otp/Pods-Lavazza_caffe_ios_with_otp.release.xcconfig"; sourceTree = "<group>"; };
 		B5DE8831D1F209DE4DB7CE2E /* Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.debug.xcconfig"; path = "Target Support Files/Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests/Pods-Lavazza_caffe_ios_with_otp-Lavazza_caffe_ios_with_otpTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -125,7 +128,6 @@
 		13B07FAE1A68108700A75B9A /* Lavazza_caffe_ios_with_otp */ = {
 			isa = PBXGroup;
 			children = (
-				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -159,6 +161,8 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				81011DCF256E9ECD00C11D81 /* assets */,
+				81011DD0256E9ECD00C11D81 /* main.jsbundle */,
 				13B07FAE1A68108700A75B9A /* Lavazza_caffe_ios_with_otp */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* Lavazza_caffe_ios_with_otpTests */,
@@ -174,7 +178,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* Lavazza_caffe_ios_with_otp.app */,
+				13B07F961A680F5B00A75B9A /* Lavazza Caffè.app */,
 				00E356EE1AD99517003FC87E /* Lavazza_caffe_ios_with_otpTests.xctest */,
 				2D02E47B1E0B4A5D006451C7 /* Lavazza_caffe_ios_with_otp-tvOS.app */,
 				2D02E4901E0B4A5D006451C7 /* Lavazza_caffe_ios_with_otp-tvOSTests.xctest */,
@@ -194,7 +198,6 @@
 				D38340E8367D815264F0C5A0 /* Pods-Lavazza_caffe_ios_with_otp-tvOSTests.debug.xcconfig */,
 				4B3316AB2A924BDC7D7EECED /* Pods-Lavazza_caffe_ios_with_otp-tvOSTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -239,7 +242,7 @@
 			);
 			name = Lavazza_caffe_ios_with_otp;
 			productName = Lavazza_caffe_ios_with_otp;
-			productReference = 13B07F961A680F5B00A75B9A /* Lavazza_caffe_ios_with_otp.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* Lavazza Caffè.app */;
 			productType = "com.apple.product-type.application";
 		};
 		2D02E47A1E0B4A5D006451C7 /* Lavazza_caffe_ios_with_otp-tvOS */ = {
@@ -294,7 +297,9 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
+						DevelopmentTeam = 37GKXG6NQ3;
 						LastSwiftMigration = 1120;
+						ProvisioningStyle = Manual;
 					};
 					2D02E47A1E0B4A5D006451C7 = {
 						CreatedOnToolsVersion = 8.2.1;
@@ -340,6 +345,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				81011DD1256E9ECE00C11D81 /* assets in Resources */,
+				81011DD2256E9ECE00C11D81 /* main.jsbundle in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 			);
@@ -375,7 +382,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
+			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
 		2D02E4CB1E0B4B27006451C7 /* Bundle React Native Code And Images */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -719,17 +726,22 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 37GKXG6NQ3;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Lavazza_caffe_ios_with_otp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = Lavazza_caffe_ios_with_otp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lavazza.LavazzaCaffe;
+				PRODUCT_NAME = "Lavazza Caffè";
+				PROVISIONING_PROFILE_SPECIFIER = "Fresh and Honest Cafe Limited";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -742,16 +754,21 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 37GKXG6NQ3;
 				INFOPLIST_FILE = Lavazza_caffe_ios_with_otp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = Lavazza_caffe_ios_with_otp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lavazza.LavazzaCaffe;
+				PRODUCT_NAME = "Lavazza Caffè";
+				PROVISIONING_PROFILE_SPECIFIER = "Fresh and Honest Cafe Limited";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};

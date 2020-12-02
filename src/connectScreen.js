@@ -19,20 +19,19 @@ import {
 } from 'react-native-responsive-dimensions';
 
 import {
-  IPADDRESS,
-  PORT,
-  HTTPS,
-  FEEDBACK_SERVER_ENDPOINT,
+  LAVAZZA_SERVER_ENDPOINT,
+  PI_SERVER_ENDPOINT,
   INTERVAL_BETWEEN_SENDING_FEEDBACK_DATA,
+  TOKEN,
+  SUCCESS,
 } from './macros';
 import getTimeoutSignal from './commonApis';
 
-export default class connectScreen extends Component {
+export default class ConnectScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
       isLoading: false,
-      isBackgroundTimerOn: false,
     };
   }
 
@@ -41,7 +40,8 @@ export default class connectScreen extends Component {
   }
 
   async componentWillUnmount() {
-    AppState.removeEventListener('change');
+    BackgroundTimer.stopBackgroundTimer(this.intervalId);
+    AppState.removeEventListener('change', this.handleAppStateChange);
   }
 
   // Sending collected Feedback data to remote server
@@ -50,20 +50,21 @@ export default class connectScreen extends Component {
     const netInfo = await NetInfo.fetch();
     console.log('Internet Connection :', netInfo.isInternetReachable);
     if (netInfo.isInternetReachable) {
-      fetch(FEEDBACK_SERVER_ENDPOINT, {
+      fetch(LAVAZZA_SERVER_ENDPOINT + '/feedback', {
         method: 'post',
         headers: {
           'Content-Type': 'application/json',
+          tokenId: TOKEN,
         },
-        signal: (await getTimeoutSignal(5000)).signal,
+        signal: (await getTimeoutSignal(30000)).signal,
         body: JSON.stringify(feedbackData),
       })
         .then((response) => response.json())
         .then(async (resultData) => {
-          if (resultData.status === 'Success') {
+          console.log(resultData);
+          if (resultData.status === SUCCESS) {
             console.log('data send');
             BackgroundTimer.stopBackgroundTimer(this.intervalId);
-            this.setState({isBackgroundTimerOn: false});
             AsyncStorage.removeItem('feedbackData');
           }
         })
@@ -77,7 +78,7 @@ export default class connectScreen extends Component {
 
   handleAppStateChange = async (state) => {
     try {
-      if (state === 'background' || state === 'inactive') {
+      if (state === 'background') {
         console.log('background');
         var feedbackData = JSON.parse(
           await AsyncStorage.getItem('feedbackData'),
@@ -90,14 +91,10 @@ export default class connectScreen extends Component {
             console.log(feedbackData);
             await this.sendFeedbackData(feedbackData);
           }, INTERVAL_BETWEEN_SENDING_FEEDBACK_DATA);
-          this.setState({isBackgroundTimerOn: true});
         }
       } else if (state === 'active') {
         console.log('active');
-        if (this.state.isbackgroundTimerOn === true) {
-          BackgroundTimer.stopBackgroundTimer(this.intervalId);
-          this.setState({isBackgroundTimerOn: false});
-        }
+        BackgroundTimer.stopBackgroundTimer(this.intervalId);
       }
     } catch (error) {
       console.log('Background error', error);
@@ -107,17 +104,16 @@ export default class connectScreen extends Component {
   onConnect = async () => {
     this.setState({isLoading: true});
     console.log('get Product Info');
-    console.log(HTTPS, PORT, IPADDRESS);
-    fetch(HTTPS + '://' + IPADDRESS + ':' + PORT + '/productInfo', {
+    fetch(PI_SERVER_ENDPOINT + '/productInfo', {
       headers: {
-        tokenId: 'secret',
+        tokenId: TOKEN,
       },
       signal: (await getTimeoutSignal(5000)).signal,
     })
       .then((response) => response.json())
       .then(async (resultData) => {
         console.log(resultData);
-        if (resultData.status === 'Success') {
+        if (resultData.status === SUCCESS) {
           this.props.navigation.navigate('dispenseScreen', {
             productList: resultData.data,
             machineName: resultData.machineName,
@@ -133,7 +129,7 @@ export default class connectScreen extends Component {
       .catch(async (e) => {
         Alert.alert(
           '',
-          'Please check your connection with the lavazza caffè machine',
+          'Please check your wifi connection with the lavazza caffè machine',
           [{text: 'ok'}],
         );
         console.log(e);

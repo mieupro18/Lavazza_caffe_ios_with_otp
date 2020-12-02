@@ -10,26 +10,32 @@ import {
   Modal,
   Keyboard,
   ActivityIndicator,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import OTPInputView from '@twotalltotems/react-native-otp-input';
 import AsyncStorage from '@react-native-community/async-storage';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import getTimeoutSignal from './commonApis';
 import {
   responsiveScreenHeight,
   responsiveScreenWidth,
   responsiveScreenFontSize,
 } from 'react-native-responsive-dimensions';
+import getTimeoutSignal from './commonApis';
+import {LAVAZZA_SERVER_ENDPOINT, SUCCESS, TOKEN} from './macros';
 
 MaterialCommunityIcons.loadFont();
 
-export default class authenticateScreen extends Component {
+export default class AuthenticateScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
       mobileNumber: null,
       isLoading: false,
       otpScreenVisible: false,
+      otpTimeout: null,
+      otpTimeoutVisible: false,
       otp: [],
       enteredOTP: null,
     };
@@ -40,49 +46,68 @@ export default class authenticateScreen extends Component {
   async componentWillUnmount() {}
 
   sendOtp = async () => {
-    const otp = Math.floor(1000 + Math.random() * 9000);
-    const URL =
-      'https://login.bulksmsgateway.in/sendmessage.php?user=FHCL&password=Fhcl$m$@12@&mobile=' +
-      this.state.mobileNumber +
-      '&message=OTP for Lavazza Caffè is ' +
-      otp +
-      '. Please DO NOT SHARE with anyone "Enjoy a safe cup of refreshment" - Lavazza&sender=LVZAPP&type=3';
-    console.log(URL);
-    /*this.state.otp.push(otp.toString());
-    console.log(this.state.otp);
-    setTimeout(()=>{this.setState({isLoading: false});},2000)
-    this.setState({otpScreenVisible: true});*/
-    fetch(URL, {signal: (await getTimeoutSignal(5000)).signal})
+    const otpRequestData = {
+      mobileNumber: this.state.mobileNumber,
+    };
+    console.log(LAVAZZA_SERVER_ENDPOINT);
+    fetch(LAVAZZA_SERVER_ENDPOINT + '/otpRequest', {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+        tokenId: TOKEN,
+      },
+      body: JSON.stringify(otpRequestData),
+      signal: (await getTimeoutSignal(30000)).signal,
+    })
       .then((response) => response.json())
       .then(async (resultData) => {
         console.log(resultData);
-        if (resultData.status === 'success') {
-          this.state.otp.push(otp.toString());
+        if (resultData.status === SUCCESS) {
+          this.state.otp.push(resultData.otp);
           console.log(this.state.otp);
-          this.setState({otpScreenVisible: true});
+          this.setState({
+            isLoading: false,
+            otpScreenVisible: true,
+            otpTimeoutVisible: true,
+            otpTimeout: 90,
+          });
+          this.intervalId = setInterval(async () => {
+            this.setState({otpTimeout: this.state.otpTimeout - 1});
+            console.log(this.state.otpTimeout);
+            if (this.state.otpTimeout === 0) {
+              clearInterval(this.intervalId);
+              this.setState({otpTimeoutVisible: false, otpTimeout: null});
+            }
+          }, 1000);
         } else {
-          Alert.alert('', 'Please check the Internet connection', [
+          Alert.alert('', 'Something went wrong Please Try again', [
             {text: 'Ok'},
           ]);
+          this.setState({isLoading: false});
         }
-        this.setState({isLoading: false});
       })
       .catch(async (e) => {
         console.log(e);
         this.setState({isLoading: false});
-        Alert.alert('', 'Please check the Internet connection', [{text: 'Ok'}]);
+        Alert.alert(
+          '',
+          'Something went wrong Please check the Internet connection',
+          [{text: 'Ok'}],
+        );
       });
   };
 
   checkOTPValidity = async () => {
     if (this.state.otp.includes(this.state.enteredOTP)) {
-      AsyncStorage.setItem('isUserVerified', 'true');
-      this.props.navigation.replace('connectScreen');
+      clearInterval(this.intervalId);
+      this.setState({otpTimeoutVisible: false, otpTimeout: null});
       Alert.alert('', 'Registered Successfully', [
         {
           text: 'Ok',
         },
       ]);
+      AsyncStorage.setItem('isUserVerified', 'true');
+      this.props.navigation.replace('connectScreen');
     } else {
       Alert.alert('', 'Invalid OTP', [{text: 'Ok'}]);
     }
@@ -102,124 +127,163 @@ export default class authenticateScreen extends Component {
     }
   };
 
+  onClosingOtpScreen = async () => {
+    clearInterval(this.intervalId);
+    this.setState({
+      otpScreenVisible: false,
+      enteredOTP: null,
+      otpTimeoutVisible: false,
+      otpTimeout: null,
+      isLoading: false,
+    });
+
+    this.state.otp = [];
+    console.log(this.state.otp);
+  };
+
   render() {
     return (
       <View style={styles.mainContainer}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <View style={styles.registrationScreenContainer}>
-              <Image
-                style={styles.logoStyleInModal}
-                source={require('../assets/lavazza_logo_without_year.png')}
-              />
-            </View>
-            <View style={styles.registrationScreenContainer}>
-              <Text style={styles.registrationTextStyle}>Registration</Text>
-              <TextInput
-                style={styles.mobileNumberInput}
-                keyboardType="number-pad"
-                placeholder=" Mobile Number"
-                fontSize={responsiveScreenFontSize(1.5)}
-                onChangeText={(number) => (this.state.mobileNumber = number)}
-              />
-            </View>
-            {this.state.isLoading ? (
-              <View style={styles.registrationScreenContainer}>
-                <View style={styles.loadingActivityContainer}>
-                  <ActivityIndicator size="small" color="#100A45" />
-                  <Text style={styles.loadingActivityTextStyle}>
-                    Loading...!
-                  </Text>
-                </View>
-              </View>
-            ) : (
-              <View style={styles.registrationScreenContainer}>
-                <TouchableHighlight
-                  underlayColor="#100A45"
-                  style={styles.submitButtonStyle}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    this.onSubmit();
-                  }}>
-                  <Text style={styles.buttonTextStyle}>Submit</Text>
-                </TouchableHighlight>
-              </View>
-            )}
-          </View>
-        </View>
-        <Modal
-          animationType="slide"
-          visible={this.state.otpScreenVisible}
-          onRequestClose={async () => {
-            this.setState({
-              otpScreenVisible: false,
-              enteredOTP: null,
-            });
-            this.state.otp = [];
-            console.log(this.state.otp);
-          }}>
-          <View style={styles.centeredView}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.centeredView}>
             <View style={styles.modalView}>
-              <MaterialCommunityIcons
-                name="close-circle"
-                style={styles.modalExitIconStyle}
-                onPress={() => {
-                  this.setState({
-                    otpScreenVisible: false,
-                    enteredOTP: null,
-                  });
-                  this.state.otp = [];
-                  console.log(this.state.otp);
-                }}
-                size={responsiveScreenHeight(3.5)}
-              />
-              <View style={styles.otpScreenContainer}>
+              <View style={styles.registrationScreenContainer}>
                 <Image
                   style={styles.logoStyleInModal}
                   source={require('../assets/lavazza_logo_without_year.png')}
                 />
               </View>
-              <View style={styles.otpScreenContainer}>
-                <Text style={styles.OTPTextStyle}>OTP Verification</Text>
-              </View>
-              <View style={styles.otpScreenContainer}>
-                <OTPInputView
-                  style={styles.otpInputView}
-                  pinCount={4}
-                  autoFocusOnLoad={false}
-                  codeInputFieldStyle={styles.otpBoxUnderlineStyleBase}
-                  codeInputHighlightStyle={
-                    styles.otpBoxUnderlineStyleHighLighted
-                  }
-                  placeholderTextColor="#100A45"
-                  onCodeFilled={(code) => {
-                    console.log('code', code);
-                    this.state.enteredOTP = code;
-                    Keyboard.dismiss();
-                    this.checkOTPValidity();
-                  }}
+              <View style={styles.registrationScreenContainer}>
+                <Text style={styles.registrationTextStyle}>
+                  User Registration
+                </Text>
+                <TextInput
+                  style={styles.mobileNumberInput}
+                  keyboardType="number-pad"
+                  selectionColor="#100A45"
+                  maxLength={10}
+                  placeholder="Enter phone number"
+                  fontSize={responsiveScreenFontSize(1.5)}
+                  onChangeText={(number) => (this.state.mobileNumber = number)}
                 />
               </View>
-              <View style={styles.otpScreenContainer}>
-                <Text style={styles.otpSentToNumberTextStyle}>
-                  OTP has been sent to
-                </Text>
-                <Text style={styles.otpSentToNumberTextStyle}>
-                  +91 {this.state.mobileNumber}
-                </Text>
-              </View>
-              <View style={styles.otpScreenContainer}>
-                <TouchableHighlight
-                  underlayColor="#100A45"
-                  style={styles.resendOtpButtonStyle}
-                  onPress={() => {
-                    this.sendOtp();
-                  }}>
-                  <Text style={styles.buttonTextStyle}>Resend OTP</Text>
-                </TouchableHighlight>
-              </View>
+              {this.state.isLoading ? (
+                <View style={styles.registrationScreenContainer}>
+                  <View style={styles.loadingActivityContainer}>
+                    <ActivityIndicator size="small" color="#100A45" />
+                    <Text style={styles.loadingActivityTextStyle}>
+                      {' '}
+                      Loading...!
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.registrationScreenContainer}>
+                  <TouchableHighlight
+                    underlayColor="#100A45"
+                    style={styles.submitButtonStyle}
+                    onPress={() => {
+                      this.onSubmit();
+                    }}>
+                    <Text style={styles.buttonTextStyle}>Submit</Text>
+                  </TouchableHighlight>
+                </View>
+              )}
             </View>
-          </View>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+        <Modal
+          animationType="slide"
+          visible={this.state.otpScreenVisible}
+          onRequestClose={async () => {
+            this.onClosingOtpScreen();
+          }}>
+          <TouchableWithoutFeedback
+            onPress={Keyboard.dismiss}
+            accessible={false}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <MaterialCommunityIcons
+                  name="close-circle"
+                  style={styles.modalExitIconStyle}
+                  onPress={() => {
+                    this.onClosingOtpScreen();
+                  }}
+                  size={responsiveScreenHeight(3.5)}
+                />
+                <View style={styles.otpScreenContainer}>
+                  <Image
+                    style={styles.logoStyleInModal}
+                    source={require('../assets/lavazza_logo_without_year.png')}
+                  />
+                </View>
+                <View style={styles.otpScreenContainer}>
+                  <Text style={styles.OTPTextStyle}>OTP Verification</Text>
+                </View>
+                <View style={styles.otpScreenContainer}>
+                  <OTPInputView
+                    style={styles.otpInputView}
+                    pinCount={4}
+                    autoFocusOnLoad={false}
+                    secureTextEntry={true}
+                    codeInputFieldStyle={styles.otpBoxUnderlineStyleBase}
+                    codeInputHighlightStyle={
+                      styles.otpBoxUnderlineStyleHighLighted
+                    }
+                    placeholderTextColor="#100A45"
+                    onCodeFilled={(code) => {
+                      console.log('code', code);
+                      this.state.enteredOTP = code;
+                      Keyboard.dismiss();
+                      this.checkOTPValidity();
+                    }}
+                  />
+                </View>
+                <View style={styles.otpScreenContainer}>
+                  <Text style={styles.otpSentToNumberTextStyle}>
+                    OTP has been sent to
+                  </Text>
+                  <Text style={styles.otpSentToNumberTextStyle}>
+                    +91 xxxxxx{this.state.mobileNumber % 10000}
+                  </Text>
+                </View>
+                {this.state.otpTimeoutVisible ? (
+                  <View style={styles.otpScreenContainer}>
+                    <Text style={styles.timeoutTextStyle}>
+                      Resend OTP in {this.state.otpTimeout} Sec
+                    </Text>
+                  </View>
+                ) : this.state.isLoading ? (
+                  <View style={styles.otpScreenContainer}>
+                    <View style={styles.loadingActivityContainer}>
+                      <ActivityIndicator size="small" color="#100A45" />
+                      <Text style={styles.loadingActivityTextStyle}>
+                        {' '}
+                        Loading...!
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.otpScreenContainer}>
+                    <TouchableHighlight
+                      underlayColor="#100A45"
+                      style={styles.resendOtpButtonStyle}
+                      onPress={() => {
+                        this.setState({isLoading: true});
+                        //setTimeout(async()=>{await this.sendOtp()},3000)
+                        this.sendOtp();
+                      }}>
+                      <Text style={styles.buttonTextStyle}>Resend OTP</Text>
+                    </TouchableHighlight>
+                  </View>
+                )}
+              </View>
+            </KeyboardAvoidingView>
+          </TouchableWithoutFeedback>
         </Modal>
       </View>
     );
@@ -229,7 +293,7 @@ export default class authenticateScreen extends Component {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
   },
   splashScreenLogoContainer: {
     flex: 1,
@@ -262,7 +326,7 @@ const styles = StyleSheet.create({
     left: '95%',
   },
   registrationScreenContainer: {
-    marginTop: '5%',
+    marginTop: '7%',
     alignItems: 'center',
   },
   logoStyleInModal: {
@@ -277,7 +341,8 @@ const styles = StyleSheet.create({
   },
   mobileNumberInput: {
     height: responsiveScreenHeight(5),
-    width: responsiveScreenWidth(45),
+    width: responsiveScreenWidth(50),
+    textAlign: 'center',
     color: '#100A45',
     borderColor: 'gray',
     borderWidth: responsiveScreenWidth(0.1),
@@ -299,14 +364,20 @@ const styles = StyleSheet.create({
   },
   loadingActivityTextStyle: {
     color: '#100A45',
+    fontWeight: 'bold',
     fontSize: responsiveScreenFontSize(1.5),
   },
   buttonTextStyle: {
     color: 'white',
     fontSize: responsiveScreenFontSize(1.5),
   },
+  timeoutTextStyle: {
+    color: '#100A45',
+    fontWeight: 'bold',
+    fontSize: responsiveScreenFontSize(1.2),
+  },
   otpScreenContainer: {
-    marginTop: '3%',
+    marginTop: '2%',
     alignItems: 'center',
     justifyContent: 'center',
   },

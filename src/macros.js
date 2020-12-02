@@ -1,34 +1,39 @@
 // SERVER INFO
-const IPADDRESS = '192.168.225.226';
-const HTTPS = 'http';
-const PORT = '9876';
-const FEEDBACK_SERVER_ENDPOINT = 'https://mieupro.pythonanywhere.com/feedback';
+const PI_SERVER_ENDPOINT = 'http://192.168.5.1:9876';
+//const PI_SERVER_ENDPOINT = 'http://34.123.104.148:9876';
+const LAVAZZA_SERVER_ENDPOINT = 'https://cfdsfeedback.lavazza.co.in:9876';
+const TOKEN = 'l@vA@zzacfd$';
+
+// HTTPS STATUS CODE
+const SUCCESS = 0;
+const FAILURE = -1;
 
 // OS types
 const ANDROID = 'android';
 const IOS = 'ios';
+
 // FEEDBACK INTERVAL TIME in ms
-//const INITIAL_FEEDBACK_INTERVAL = 10800000;
-//const ROUTINE_FEEDBACK_INTERVAL = 86400000;
-//const INTERVAL_BETWEEN_SENDING_FEEDBACK_DATA = 300000;
+const INITIAL_FEEDBACK_INTERVAL = 86400000;
+const ROUTINE_FEEDBACK_INTERVAL = 1296000000;
+const INTERVAL_BETWEEN_SENDING_FEEDBACK_DATA = 20000;
 
 // POLLING INTERVAL FOR REST CALL in ms
-const HTTP_POLLING_INTERVAL = 4000;
-const SPLASHSCREEN_VISIBLE_TIME = 3000;
+const HTTP_POLLING_INTERVAL = 3000;
+const SPLASHSCREEN_VISIBLE_TIME = 2000;
 
 // Dispense timeout in sec
 const timeoutForDispense = 30;
 
 // FEEDBACK INTERVAL TIME in ms
-const INITIAL_FEEDBACK_INTERVAL = 60000;
-const ROUTINE_FEEDBACK_INTERVAL = 60000;
-const INTERVAL_BETWEEN_SENDING_FEEDBACK_DATA = 5000;
+//const INITIAL_FEEDBACK_INTERVAL = 60000;
+//const ROUTINE_FEEDBACK_INTERVAL = 60000;
+//const INTERVAL_BETWEEN_SENDING_FEEDBACK_DATA = 5000;
 
 // ORDER POSITIVE STATUS CODE
 const BEFORE_PLACING_ORDER = 0;
 const PLEASE_WAIT = 1;
 const ORDER_PLACED_AND_RECEIVED_BY_THE_MACHINE = 2;
-const PLACE_THE_CUP = 3;
+const WAITING_TO_DISPENSE = 3;
 const DISPENSING = 4;
 const ORDER_DISPENSED = 5;
 
@@ -39,6 +44,10 @@ const MACHINE_NOT_READY = 8;
 const FOAMER_OFF = 9;
 const RINSING = 10;
 const MILK_NOT_READY = 11;
+const MACHINE_DETAIL_MISMATCH = 12;
+const INVALID_TOKEN = 13;
+const EXCEPTION_OCCURED = 14;
+const MACHINE_ERROR = 15;
 
 const orderStatus = {
   0: 'Order your Beverage',
@@ -51,99 +60,163 @@ const orderStatus = {
   7: 'Timeout Expired',
   8: '     Machine is not ready\nPlease try after sometime',
   9: 'Please turn on the Foamer',
-  10: 'Rinsing',
+  10: '       Rinsing is going on\nPlease try after sometime',
   11: '         Milk is not ready\nPlease try after sometime',
+  15: 'Machine Error',
 };
 
 const productList = [
   {
-    productName: 'Cappuccino',
-    src: require('../assets/cappuccino.jpg'),
-  },
-  {
-    productName: 'Espresso',
-    src: require('../assets/espresso.jpg'),
-  },
-  {
-    productName: 'Milk',
-    src: require('../assets/milk.jpg'),
-  },
-  {
-    productName: 'South Indian Coffee Light',
-    src: require('../assets/SIC_light.jpg'),
-  },
-  {
-    productName: 'South Indian Coffee Strong',
-    src: require('../assets/SIC_strong.jpg'),
-  },
-  {
-    productName: 'Tea Milk',
-    src: require('../assets/tea_milk.jpg'),
-  },
-  {
-    productName: 'Tea Water',
-    src: require('../assets/tea_water.jpg'),
-  },
-  {
-    productName: 'Lemon Tea',
-    src: require('../assets/lemon_tea.png'),
-  },
-  {
+    productId: 1,
     productName: 'Ristretto',
-    src: require('../assets/ristretto.jpg'),
+    src: require('../assets/Ristretto.jpg'),
   },
   {
-    productName: 'Macchiato',
-    src: require('../assets/macchiato.jpg'),
+    productId: 2,
+    productName: 'Espresso',
+    src: require('../assets/Espresso.jpg'),
   },
   {
-    productName: 'Hot Water',
-    src: require('../assets/hot_water.jpg'),
-  },
-  {
-    productName: 'Hot Chocolate',
-    src: require('../assets/hot_chocolate.jpg'),
-  },
-  {
-    productName: 'Horlicks',
-    src: require('../assets/horlicks.jpg'),
-  },
-  {
-    productName: 'Green Tea',
-    src: require('../assets/green_tea.jpg'),
-  },
-  {
-    productName: 'Caffe Latte',
-    src: require('../assets/caffe_latte.jpg'),
-  },
-  {
-    productName: 'Black Tea',
-    src: require('../assets/black_tea.jpg'),
-  },
-  {
+    productId: 3,
     productName: 'Black Coffee',
-    src: require('../assets/black_coffee.jpg'),
+    src: require('../assets/Black_Coffee.jpg'),
   },
   {
+    productId: 4,
+    productName: 'South Indian Coffee Light',
+    src: require('../assets/South_Indian_Coffee_Light_or_Filter_Coffee.jpg'),
+  },
+  {
+    productId: 5,
+    productName: 'South Indian Coffee Strong',
+    src: require('../assets/South_Indian_Coffee_Strong.jpg'),
+  },
+  {
+    productId: 6,
+    productName: 'Caffe Latte',
+    src: require('../assets/Caffe_Latte.jpg'),
+  },
+  {
+    productId: 7,
+    productName: 'Cappuccino',
+    src: require('../assets/Cappuccino_or_Macchiato.jpg'),
+  },
+  {
+    productId: 8,
+    productName: 'Macchiato',
+    src: require('../assets/Cappuccino_or_Macchiato.jpg'),
+  },
+  {
+    productId: 9,
+    productName: 'Tea Water',
+    src: require('../assets/Tea_Water.jpg'),
+  },
+  {
+    productId: 10,
+    productName: 'Tea Milk',
+    src: require('../assets/Tea_Milk.jpg'),
+  },
+  {
+    productId: 11,
+    productName: 'Green Tea',
+    src: require('../assets/Green_Tea.jpg'),
+  },
+  {
+    productId: 12,
+    productName: 'Lemon Tea',
+    src: require('../assets/Lemon_Tea.jpg'),
+  },
+  {
+    productId: 13,
     productName: 'Hot Milk',
-    src: require('../assets/hot_milk.jpg'),
+    src: require('../assets/Hot_Milk.jpg'),
   },
   {
+    productId: 14,
+    productName: 'Hot Water',
+    src: require('../assets/Hot_Water.jpg'),
+  },
+  {
+    productId: 15,
+    productName: 'Black Tea',
+    src: require('../assets/Black_Tea_or_Boiled_Tea.jpg'),
+  },
+  {
+    productId: 16,
+    productName: 'Horlicks',
+    src: require('../assets/Horlicks.jpg'),
+  },
+  {
+    productId: 17,
+    productName: 'Hot Chocolate',
+    src: require('../assets/Hot_Chocolate.jpg'),
+  },
+  {
+    productId: 18,
     productName: 'Badam Milk',
-    src: require('../assets/badam_milk.jpg'),
+    src: require('../assets/Badam_Milk.jpg'),
+  },
+  {
+    productId: 19,
+    productName: 'Filter Coffee',
+    src: require('../assets/South_Indian_Coffee_Light_or_Filter_Coffee.jpg'),
+  },
+  {
+    productId: 20,
+    productName: 'Boiled Tea',
+    src: require('../assets/Black_Tea_or_Boiled_Tea.jpg'),
+  },
+  {
+    productId: 21,
+    productName: 'Soup',
+    src: require('../assets/Soup_or_Vegetable_Soup.jpg'),
+  },
+  {
+    productId: 22,
+    productName: 'Tomato Soup',
+    src: require('../assets/Tomato_Soup.jpg'),
+  },
+  {
+    productId: 23,
+    productName: 'Vegetable Soup',
+    src: require('../assets/Soup_or_Vegetable_Soup.jpg'),
+  },
+  {
+    productId: 24,
+    productName: 'Mug Smoodle',
+    src: require('../assets/Cup_Noodles_or_Mug_Smoodle.jpg'),
+  },
+  {
+    productId: 25,
+    productName: 'Cup Noodles',
+    src: require('../assets/Cup_Noodles_or_Mug_Smoodle.jpg'),
+  },
+  {
+    productId: 26,
+    productName: 'Corn Flakes',
+    src: require('../assets/Corn_Flakes.jpg'),
+  },
+  {
+    productId: 27,
+    productName: 'Sugarless Cereals',
+    src: require('../assets/Sugarless_Cereals.jpg'),
+  },
+  {
+    productId: 28,
+    productName: 'Steam',
+    src: require('../assets/Steam.jpg'),
   },
 ];
 
 export {
-  IPADDRESS,
-  HTTPS,
-  PORT,
-  FEEDBACK_SERVER_ENDPOINT,
+  TOKEN,
+  PI_SERVER_ENDPOINT,
+  LAVAZZA_SERVER_ENDPOINT,
   BEFORE_PLACING_ORDER,
   PLEASE_WAIT,
   ORDER_PLACED_AND_RECEIVED_BY_THE_MACHINE,
   DISPENSING,
-  PLACE_THE_CUP,
+  WAITING_TO_DISPENSE,
   ORDER_DISPENSED,
   SOMETHING_WENT_WRONG,
   TIMEOUT_EXPIRED,
@@ -151,6 +224,10 @@ export {
   FOAMER_OFF,
   RINSING,
   MILK_NOT_READY,
+  MACHINE_DETAIL_MISMATCH,
+  INVALID_TOKEN,
+  EXCEPTION_OCCURED,
+  MACHINE_ERROR,
   INITIAL_FEEDBACK_INTERVAL,
   ROUTINE_FEEDBACK_INTERVAL,
   INTERVAL_BETWEEN_SENDING_FEEDBACK_DATA,
@@ -161,4 +238,6 @@ export {
   timeoutForDispense,
   ANDROID,
   IOS,
+  SUCCESS,
+  FAILURE,
 };

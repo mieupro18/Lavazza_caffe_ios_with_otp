@@ -7,8 +7,8 @@ import {
   View,
   Text,
   Modal,
-  AppState,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {Card, CardItem} from 'native-base';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -21,13 +21,10 @@ import {
   responsiveScreenFontSize,
 } from 'react-native-responsive-dimensions';
 import {
-  IPADDRESS,
-  HTTPS,
-  PORT,
   BEFORE_PLACING_ORDER,
   PLEASE_WAIT,
   ORDER_PLACED_AND_RECEIVED_BY_THE_MACHINE,
-  PLACE_THE_CUP,
+  WAITING_TO_DISPENSE,
   DISPENSING,
   ORDER_DISPENSED,
   SOMETHING_WENT_WRONG,
@@ -36,19 +33,27 @@ import {
   FOAMER_OFF,
   RINSING,
   MILK_NOT_READY,
+  MACHINE_DETAIL_MISMATCH,
+  MACHINE_ERROR,
   orderStatus,
   INITIAL_FEEDBACK_INTERVAL,
   ROUTINE_FEEDBACK_INTERVAL,
   HTTP_POLLING_INTERVAL,
   timeoutForDispense,
   productList,
+  TOKEN,
+  SUCCESS,
+  PI_SERVER_ENDPOINT,
 } from './macros';
 import getTimeoutSignal from './commonApis';
+import ProgressiveImage from './progressiveImage';
 
 MaterialCommunityIcons.loadFont();
 MaterialIcons.loadFont();
 
-class dispenseScreen extends Component {
+const finalPairOrderPosition = 2;
+
+export default class DispenseScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -56,16 +61,22 @@ class dispenseScreen extends Component {
       modalVisible: false,
       feedbackVisible: false,
       orderNumberVisible: false,
-      waitTimeVisible: false,
+      currentOrderNumberVisible: false,
       orderStatusCode: null,
       starCount: 0,
       deviceProductList: [],
       orderId: null,
       orderNumber: null,
-      waitTime: null,
+      currentOrderNumber: null,
+      pairOrderFlag: false,
+      pairProductId: null,
+      pairProductName: null,
+      pairProductImage: null,
       timer: timeoutForDispense,
       machineName: null,
       machineId: null,
+      stopButtonVisible: false,
+      currentDispensingPairOrderPosition: 0,
     };
   }
 
@@ -73,19 +84,17 @@ class dispenseScreen extends Component {
     this.showProductList(this.props.route.params.productList);
   }
 
-  async componentWillUnmount() {
-    AppState.removeEventListener('change');
-  }
+  async componentWillUnmount() {}
 
-  showProductList = async (produtList) => {
+  showProductList = async (machineProdutList) => {
     console.log('show Product list');
     let deviceProductList = [];
-    await produtList.map(async (product) => {
+    await machineProdutList.map(async (product) => {
       let filterProduct = productList.find(
-        (allproduct) => allproduct.productName === product.productName,
+        (allproduct) => allproduct.productId === product.productId,
       );
-      filterProduct.productId = product.productId;
-      deviceProductList.push(filterProduct);
+      product.src = filterProduct.src;
+      deviceProductList.push(product);
     });
     this.setState({
       deviceProductList: deviceProductList,
@@ -136,10 +145,25 @@ class dispenseScreen extends Component {
     this.setState({
       orderId: null,
       orderNumberVisible: false,
-      waitTimeVisible: false,
+      currentOrderNumberVisible: false,
       orderNumber: null,
-      waitTime: null,
+      currentOrderNumber: null,
+      pairOrderFlag: false,
+      pairProductId: null,
+      pairProductName: null,
+      pairProductImage: null,
+      stopButtonVisible: false,
+      currentDispensingPairOrderPosition: 0,
     });
+  };
+
+  showMachineNameMismatch = async () => {
+    Alert.alert('', 'Product list may be changed. Please reconnect', [
+      {
+        text: 'Ok',
+      },
+    ]);
+    this.props.navigation.goBack();
   };
 
   stopPollForOrderStatus = async () => {
@@ -148,38 +172,39 @@ class dispenseScreen extends Component {
 
   startPollForOrderStatus = async (productName) => {
     this.pollingIntervalId = setInterval(async () => {
-      fetch(
-        HTTPS +
-          '://' +
-          IPADDRESS +
-          ':' +
-          PORT +
-          '/orderStatus?orderId=' +
-          this.state.orderId,
-        {
-          headers: {
-            tokenId: 'secret',
-          },
-          signal: (await getTimeoutSignal(10000)).signal,
+      fetch(PI_SERVER_ENDPOINT + '/orderStatus?orderId=' + this.state.orderId, {
+        headers: {
+          tokenId: TOKEN,
+          machineId: this.state.machineId,
+          machineName: this.state.machineName,
         },
-      )
+        signal: (await getTimeoutSignal(5000)).signal,
+      })
         .then((response) => response.json())
         .then(async (resultData) => {
           console.log(resultData);
-          if (resultData.status === 'Success') {
+          if (resultData.status === SUCCESS) {
             if (
-              resultData.orderStatus === 'InQueue' ||
-              resultData.orderStatus === 'Dispensing'
+              resultData.orderStatus ===
+                ORDER_PLACED_AND_RECEIVED_BY_THE_MACHINE ||
+              resultData.orderStatus === DISPENSING
             ) {
+              if (resultData.currentOrder) {
+                this.setState({
+                  currentOrderNumberVisible: true,
+                  currentOrderNumber: resultData.currentOrder,
+                });
+              }
               console.log('Continue poll');
-            } else if (resultData.orderStatus === 'WaitingToDispense') {
+            } else if (resultData.orderStatus === WAITING_TO_DISPENSE) {
               this.stopPollForOrderStatus();
               console.log('WaitingToDispense');
               console.log('Stopped poll for user to place the cup');
               this.setState({
-                orderStatusCode: PLACE_THE_CUP,
-                waitTimeVisible: false,
-                waitTime: null,
+                orderStatusCode: WAITING_TO_DISPENSE,
+                currentOrderNumberVisible: false,
+                currentOrderNumber: null,
+                stopButtonVisible: false,
               });
               this.timer = setInterval(async () => {
                 this.setState({timer: this.state.timer - 1});
@@ -193,7 +218,7 @@ class dispenseScreen extends Component {
                   this.setStateVariablesToInitialState();
                 }
               }, 1000);
-            } else if (resultData.orderStatus === 'Dispensed') {
+            } else if (resultData.orderStatus === ORDER_DISPENSED) {
               console.log('Dispensed');
               this.stopPollForOrderStatus();
               if (await this.checkForFeedbackVisibility(productName)) {
@@ -205,23 +230,25 @@ class dispenseScreen extends Component {
               this.setState({
                 orderStatusCode: ORDER_DISPENSED,
                 orderId: null,
-              });
-            } else if (resultData.orderStatus === 'Machine is not Ready') {
-              console.log('not ready');
-              this.stopPollForOrderStatus();
-              this.setState({
-                orderStatusCode: MACHINE_NOT_READY,
-                orderId: null,
+                stopButtonVisible: false,
+                currentDispensingPairOrderPosition: 0,
               });
             }
           } else {
             this.stopPollForOrderStatus();
-            this.setState({
-              orderStatusCode: SOMETHING_WENT_WRONG,
-            });
+            if (resultData.orderStatus === MACHINE_DETAIL_MISMATCH) {
+              this.showMachineNameMismatch();
+            } else if (resultData.orderStatus === MACHINE_NOT_READY) {
+              this.setState({orderStatusCode: MACHINE_NOT_READY});
+            } else if (resultData.orderStatus === MACHINE_ERROR) {
+              this.setState({orderStatusCode: MACHINE_ERROR});
+            } else {
+              this.setState({
+                orderStatusCode: SOMETHING_WENT_WRONG,
+              });
+            }
             this.setStateVariablesToInitialState();
           }
-          //console.log(this.state.orderStatusCode);
         })
         .catch(async (e) => {
           this.stopPollForOrderStatus();
@@ -233,39 +260,94 @@ class dispenseScreen extends Component {
     }, HTTP_POLLING_INTERVAL);
   };
 
+  checkForPairOrder = async (
+    productId,
+    productName,
+    pairOrderFlag,
+    pairProductId,
+  ) => {
+    if (pairOrderFlag) {
+      let pairProduct = this.state.deviceProductList.find(
+        (allproduct) => allproduct.productId === pairProductId,
+      );
+      if (typeof pairProduct === 'undefined') {
+        this.placeOrder(productId, productName);
+      } else {
+        console.log(pairProduct);
+        Alert.alert('', 'Do you want to add ' + pairProduct.productName + '?', [
+          {
+            text: 'Yes',
+            onPress: () => {
+              this.setState({
+                pairOrderFlag: pairOrderFlag,
+                pairProductId: pairProductId,
+                pairProductName: pairProduct.productName,
+                pairProductImage: pairProduct.src,
+              });
+              this.placeOrder(productId, productName);
+            },
+          },
+          {
+            text: 'No',
+            onPress: () => {
+              this.placeOrder(productId, productName);
+            },
+          },
+        ]);
+      }
+    } else {
+      this.placeOrder(productId, productName);
+    }
+  };
+
   placeOrder = async (productId, productName) => {
     this.setState({
       orderStatusCode: PLEASE_WAIT,
     });
     console.log(productId);
     fetch(
-      HTTPS + '://' + IPADDRESS + ':' + PORT + '/order?productId=' + productId,
+      PI_SERVER_ENDPOINT +
+        '/order?productId=' +
+        productId +
+        '&pairOrderFlag=' +
+        this.state.pairOrderFlag,
       {
         headers: {
-          tokenId: 'secret',
+          tokenId: TOKEN,
+          machineId: this.state.machineId,
+          machineName: this.state.machineName,
         },
-        signal: (await getTimeoutSignal(10000)).signal,
+        signal: (await getTimeoutSignal(5000)).signal,
       },
     )
       .then((response) => response.json())
       .then(async (resultData) => {
         console.log(resultData);
-        if (resultData.status === 'Success') {
+        if (
+          resultData.status === SUCCESS &&
+          resultData.orderStatus === ORDER_PLACED_AND_RECEIVED_BY_THE_MACHINE
+        ) {
           this.setState({
             orderStatusCode: ORDER_PLACED_AND_RECEIVED_BY_THE_MACHINE,
             orderNumberVisible: true,
-            waitTimeVisible: true,
             orderNumber: resultData.orderNo,
-            waitTime: resultData.approxWaitTime * 30,
           });
           this.state.orderId = resultData.orderId;
           await this.startPollForOrderStatus(productName);
         } else {
-          if (resultData.infoText === 'Machine is not Ready') {
+          if (resultData.orderStatus === MACHINE_NOT_READY) {
             this.setState({orderStatusCode: MACHINE_NOT_READY});
+          } else if (resultData.orderStatus === MACHINE_DETAIL_MISMATCH) {
+            this.showMachineNameMismatch();
           } else {
             this.setState({orderStatusCode: SOMETHING_WENT_WRONG});
           }
+          this.setState({
+            pairOrderFlag: false,
+            pairProductId: null,
+            pairProductName: null,
+            pairProductImage: null,
+          });
         }
       })
       .catch(async (e) => {
@@ -280,37 +362,45 @@ class dispenseScreen extends Component {
   startDispense = async (productName) => {
     clearInterval(this.timer);
     this.setState({timer: timeoutForDispense});
-    this.setState({orderStatusCode: DISPENSING});
-    fetch(
-      HTTPS +
-        '://' +
-        IPADDRESS +
-        ':' +
-        PORT +
-        '/dispense?orderId=' +
-        this.state.orderId,
-      {
-        headers: {
-          tokenId: 'secret',
-        },
-        signal: (await getTimeoutSignal(10000)).signal,
+    this.setState({orderStatusCode: PLEASE_WAIT});
+    fetch(PI_SERVER_ENDPOINT + '/dispense?orderId=' + this.state.orderId, {
+      headers: {
+        tokenId: TOKEN,
+        machineId: this.state.machineId,
+        machineName: this.state.machineName,
       },
-    )
+      signal: (await getTimeoutSignal(10000)).signal,
+    })
       .then((response) => response.json())
       .then(async (resultData) => {
         console.log(resultData);
-        if (resultData.status === 'Success') {
+        if (
+          resultData.status === SUCCESS &&
+          resultData.orderStatus === DISPENSING
+        ) {
+          this.setState({orderStatusCode: DISPENSING});
           console.log('Dispense Starts');
           this.startPollForOrderStatus(productName);
+          if (this.state.pairOrderFlag) {
+            this.setState({
+              currentDispensingPairOrderPosition:
+                this.state.currentDispensingPairOrderPosition + 1,
+            });
+          }
+          if (resultData.stopDispense) {
+            this.setState({stopButtonVisible: true});
+          }
         } else {
-          if (resultData.infoText === 'Machine is not Ready') {
+          if (resultData.orderStatus === MACHINE_NOT_READY) {
             this.setState({orderStatusCode: MACHINE_NOT_READY});
-          } else if (resultData.infoText === 'Foamer off') {
+          } else if (resultData.orderStatus === FOAMER_OFF) {
             this.setState({orderStatusCode: FOAMER_OFF});
-          } else if (resultData.infoText === 'Rinsing') {
+          } else if (resultData.orderStatus === RINSING) {
             this.setState({orderStatusCode: RINSING});
-          } else if (resultData.infoText === 'Milk not Ready') {
+          } else if (resultData.orderStatus === MILK_NOT_READY) {
             this.setState({orderStatusCode: MILK_NOT_READY});
+          } else if (resultData.orderStatus === MACHINE_DETAIL_MISMATCH) {
+            this.showMachineNameMismatch();
           } else {
             this.setState({orderStatusCode: SOMETHING_WENT_WRONG});
           }
@@ -325,7 +415,54 @@ class dispenseScreen extends Component {
       });
   };
 
-  async onStarRatingPress(rating, productName) {
+  stopDispense = async (productName) => {
+    fetch(PI_SERVER_ENDPOINT + '/stopDispense?orderId=' + this.state.orderId, {
+      headers: {
+        tokenId: TOKEN,
+        machineId: this.state.machineId,
+        machineName: this.state.machineName,
+      },
+      signal: (await getTimeoutSignal(5000)).signal,
+    })
+      .then((response) => response.json())
+      .then(async (resultData) => {
+        console.log(resultData);
+        if (resultData.status === SUCCESS) {
+          if (
+            this.state.pairOrderFlag === false ||
+            this.state.currentDispensingPairOrderPosition ===
+              finalPairOrderPosition
+          ) {
+            this.stopPollForOrderStatus();
+            console.log('Dispense Stopped');
+            if (await this.checkForFeedbackVisibility(productName)) {
+              console.log('feedback visible');
+              this.setState({
+                feedbackVisible: true,
+              });
+            }
+            this.setState({
+              orderStatusCode: ORDER_DISPENSED,
+              orderId: null,
+            });
+          }
+        } else {
+          console.log('Error in stopping the dispense');
+          this.stopPollForOrderStatus();
+          this.setState({orderStatusCode: SOMETHING_WENT_WRONG});
+          this.setStateVariablesToInitialState();
+        }
+      })
+      .catch(async (e) => {
+        this.stopPollForOrderStatus();
+        this.setState({
+          orderStatusCode: SOMETHING_WENT_WRONG,
+        });
+        this.setStateVariablesToInitialState();
+      });
+  };
+
+  async onStarRatingPress(rating, productNames) {
     console.log(rating);
     this.setState({
       starCount: rating,
@@ -335,24 +472,51 @@ class dispenseScreen extends Component {
       console.log('null');
       feedbackData = {};
     }
-    feedbackData[productName] = {
-      machineId: this.state.machineId,
-      machineName: this.state.machineName,
-      rating: rating,
-      timeStamp: new Date(),
-    };
+    for (var index in productNames) {
+      feedbackData[productNames[index]] = {
+        machineId: this.state.machineId,
+        machineName: this.state.machineName,
+        rating: rating,
+        timeStamp: new Date(),
+      };
+    }
     AsyncStorage.setItem('feedbackData', JSON.stringify(feedbackData));
     console.log(await AsyncStorage.getItem('feedbackData'));
+    Alert.alert('', 'Thanks for your feedback !!!', [
+      {
+        text: 'ok',
+        onPress: () => {
+          this.setState({modalVisible: false});
+          this.props.navigation.goBack();
+        },
+      },
+    ]);
   }
 
   render() {
     return (
       <SafeAreaView style={styles.mainContainer}>
         <View style={styles.headerContainer}>
-          <Image
-            style={styles.logoStyleInHeader}
-            source={require('../assets/Lavazza-White-Logo-No-Background-.png')}
-          />
+          <TouchableOpacity
+            onPress={() => {
+              Alert.alert(
+                'Machine Info',
+                'Machine Id : ' +
+                  this.state.machineId +
+                  '\nMachine Name : ' +
+                  this.state.machineName,
+                [
+                  {
+                    text: 'Done',
+                  },
+                ],
+              );
+            }}>
+            <Image
+              style={styles.logoStyleInHeader}
+              source={require('../assets/Lavazza-White-Logo-No-Background.png')}
+            />
+          </TouchableOpacity>
         </View>
         <ScrollView>
           {this.state.deviceProductList.map((product, index) => {
@@ -429,23 +593,52 @@ class dispenseScreen extends Component {
                         .productName
                     }
                   </Text>
+                  {this.state.pairOrderFlag ? (
+                    <Text style={styles.productNameTextStyle}>
+                      {'&'}
+                      {this.state.pairProductName}
+                    </Text>
+                  ) : null}
                 </View>
                 {this.state.orderStatusCode === DISPENSING ? (
                   <View style={styles.modalItemContainer}>
-                    <Image
-                      style={styles.dispensingGifStyleInModal}
-                      source={require('../assets/dispensing.gif')}
-                    />
+                    <View style={styles.dispensingGifContainer}>
+                      <ProgressiveImage
+                        style={styles.dispensingGifStyleInModal}
+                        source={require('../assets/dispensing.gif')}
+                      />
+                    </View>
                   </View>
                 ) : (
-                  <View style={styles.modalItemContainer}>
-                    <Image
-                      style={styles.productImageStyleInModal}
-                      source={
-                        this.state.deviceProductList[this.state.selectedIndex]
-                          .src
-                      }
-                    />
+                  <View>
+                    {this.state.pairOrderFlag ? (
+                      <View style={styles.pairProductImageContainer}>
+                        <Image
+                          style={styles.productImageStyleInModal}
+                          source={
+                            this.state.deviceProductList[
+                              this.state.selectedIndex
+                            ].src
+                          }
+                        />
+                        <Text style={styles.productNameTextStyle}>{'   '}</Text>
+                        <Image
+                          style={styles.productImageStyleInModal}
+                          source={this.state.pairProductImage}
+                        />
+                      </View>
+                    ) : (
+                      <View style={styles.modalItemContainer}>
+                        <Image
+                          style={styles.productImageStyleInModal}
+                          source={
+                            this.state.deviceProductList[
+                              this.state.selectedIndex
+                            ].src
+                          }
+                        />
+                      </View>
+                    )}
                   </View>
                 )}
                 {this.state.orderNumberVisible ? (
@@ -463,11 +656,33 @@ class dispenseScreen extends Component {
                   </Text>
                 </View>
 
-                {this.state.waitTimeVisible ? (
+                {this.state.currentOrderNumberVisible ? (
                   <View style={styles.modalItemContainer}>
                     <Text style={styles.timeoutTextStyle}>
-                      Approx Wait Time - {this.state.waitTime} Sec
+                      Current Serving Order No {this.state.currentOrderNumber}
                     </Text>
+                  </View>
+                ) : null}
+
+                {this.state.stopButtonVisible ? (
+                  <View style={styles.modalItemContainer}>
+                    <MaterialCommunityIcons.Button
+                      name="stop-circle"
+                      size={responsiveScreenHeight(3)}
+                      color="white"
+                      backgroundColor="#100A45"
+                      onPress={async () => {
+                        this.setState({
+                          stopButtonVisible: false,
+                          orderStatusCode: PLEASE_WAIT,
+                        });
+                        await this.stopDispense(
+                          this.state.deviceProductList[this.state.selectedIndex]
+                            .productName,
+                        );
+                      }}>
+                      <Text style={styles.buttonTextStyle}>Stop</Text>
+                    </MaterialCommunityIcons.Button>
                   </View>
                 ) : null}
 
@@ -486,14 +701,18 @@ class dispenseScreen extends Component {
                         fullStarColor="#100A45"
                         halfStarEnabled={false}
                         rating={this.state.starCount}
-                        selectedStar={(rating) =>
-                          this.onStarRatingPress(
-                            rating,
+                        selectedStar={(rating) => {
+                          let productNames = [];
+                          productNames.push(
                             this.state.deviceProductList[
                               this.state.selectedIndex
                             ].productName,
-                          )
-                        }
+                          );
+                          if (this.state.pairOrderFlag) {
+                            productNames.push(this.state.pairProductName);
+                          }
+                          this.onStarRatingPress(rating, productNames);
+                        }}
                       />
                     </View>
                   </View>
@@ -506,15 +725,21 @@ class dispenseScreen extends Component {
                       color="white"
                       backgroundColor="#100A45"
                       onPress={async () => {
-                        this.setState({modalVisible: false});
-                        this.props.navigation.goBack();
+                        if (this.state.feedbackVisible === true) {
+                          Alert.alert('', 'Please provide the feedback', [
+                            {text: 'ok'},
+                          ]);
+                        } else {
+                          this.setState({modalVisible: false});
+                          this.props.navigation.goBack();
+                        }
                       }}>
                       <Text style={styles.buttonTextStyle}>Done</Text>
                     </MaterialCommunityIcons.Button>
                   </View>
                 ) : null}
 
-                {this.state.orderStatusCode === PLACE_THE_CUP ? (
+                {this.state.orderStatusCode === WAITING_TO_DISPENSE ? (
                   <View style={{}}>
                     <View style={styles.modalItemContainer}>
                       <MaterialCommunityIcons.Button
@@ -549,11 +774,15 @@ class dispenseScreen extends Component {
                       color="white"
                       backgroundColor="#100A45"
                       onPress={async () => {
-                        await this.placeOrder(
+                        await this.checkForPairOrder(
                           this.state.deviceProductList[this.state.selectedIndex]
                             .productId,
                           this.state.deviceProductList[this.state.selectedIndex]
                             .productName,
+                          this.state.deviceProductList[this.state.selectedIndex]
+                            .pairOrderFlag,
+                          this.state.deviceProductList[this.state.selectedIndex]
+                            .pairProductId,
                         );
                       }}>
                       <Text style={styles.buttonTextStyle}>Order</Text>
@@ -634,10 +863,23 @@ const styles = StyleSheet.create({
     marginTop: '3%',
     alignItems: 'center',
   },
+  alignItemsCenterContainer: {
+    alignItems: 'center',
+  },
+  pairProductImageContainer: {
+    marginTop: '3%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   logoStyleInModal: {
     width: responsiveScreenWidth(25),
     height: responsiveScreenHeight(4),
     resizeMode: 'contain',
+  },
+  dispensingGifContainer: {
+    borderRadius: responsiveScreenWidth(25),
+    overflow: 'hidden',
   },
   dispensingGifStyleInModal: {
     width: responsiveScreenWidth(40),
@@ -675,6 +917,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#100A45',
   },
+  stopTextStyle: {
+    fontSize: responsiveScreenFontSize(1.3),
+    fontWeight: 'bold',
+    color: '#100A45',
+  },
 });
-
-export default dispenseScreen;
